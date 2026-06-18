@@ -45,7 +45,7 @@ export default function EmailGenerator({ session, updateSession, navigate }) {
   async function generate() {
     setLoading(true); setResult(null)
     try {
-      const res = await fetch('/api/ai', {
+      const res = await fetch('/.netlify/functions/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

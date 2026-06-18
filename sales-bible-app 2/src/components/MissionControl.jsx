@@ -444,7 +444,7 @@ export default function MissionControl({ session, updateSession, navigate }) {
     setAiLoading(true)
     setAiResult(null)
     try {
-      const res = await fetch('/api/ai', {
+      const res = await fetch('/.netlify/functions/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -458,8 +458,9 @@ export default function MissionControl({ session, updateSession, navigate }) {
           buyerTitle: session.buyerTitle,
         }),
       })
-      if (!res.ok) throw new Error('API error')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
+      if (data.error) throw new Error(data.error + (data.raw ? ': ' + data.raw.slice(0, 100) : ''))
       setAiResult(data)
     } catch (e) {
       setAiError('Could not reach the AI. Check your connection or API key.')
