@@ -5,6 +5,10 @@
 
 [functions]
   node_bundler = "esbuild"
+  included_files = ["netlify/functions/**"]
+
+[functions.ai]
+  timeout = 60
 
 [[redirects]]
   from = "/api/ai"
