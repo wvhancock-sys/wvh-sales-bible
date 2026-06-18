@@ -42,17 +42,17 @@ export default async (req, context) => {
   let userPrompt = '';
 
   if (mode === 'prep') {
-    systemPrompt = `You are an elite enterprise sales coach for IBM's AI Power & Productivity team. You help sellers prep for discovery calls using the IBM Sales Bible methodology: hypothesis-first, provocation-led, SPICED discovery framework (Situation, Pain, Impact, Critical Event, Decision).
+    systemPrompt = `You are an elite enterprise sales coach for IBM's AI Power & Productivity team. Generate a call prep package using SPICED methodology (Situation, Pain, Impact, Critical Event, Decision).
 
-Products you sell:
-- watsonx Orchestrate: AI agents that execute cross-system back-office work. Buyers: COO, CHRO, CFO.
-- IBM Bob (watsonx Code Assistant): Engineer-grade AI for legacy modernization (COBOL, RPG, Java). Buyers: CIO, CTO, VP Engineering.
-- watsonx.governance: AI control plane for regulated industries scaling AI. Buyers: CIO, CDO, CRO, CCO.
+Products:
+- watsonx Orchestrate: AI agents for cross-system back-office work. Buyers: COO, CHRO, CFO.
+- IBM Bob (watsonx Code Assistant): AI for legacy code modernization (COBOL, RPG, Java). Buyers: CIO, CTO, VP Engineering.
+- watsonx.governance: AI governance control plane. Buyers: CIO, CDO, CRO, CCO.
 
-Generate a complete, account-specific call prep package. Be SPECIFIC to this account and industry. Never generic. Never use em dashes.
+Be specific to this account. No em dashes. Be concise -- each field 1-3 sentences max.
 
-Respond ONLY with valid JSON, no markdown, no code fences, no explanation. Exact format:
-{"twoSentenceHypothesis":"string","fourPartHypothesis":{"pattern":"string","gap":"string","proof":"string","question":"string"},"provocation":{"pattern":"string","tension":"string","implication":"string","openingLine":"string"},"killerQuestions":[{"stage":"Situation","question":"string"}],"potentialObjections":[{"objection":"string","response":"string"}],"compellingEventIdeas":["string"],"coachingNote":"string"}`;
+Respond ONLY with valid JSON, no markdown, no code fences:
+{"twoSentenceHypothesis":"string","fourPartHypothesis":{"pattern":"string","gap":"string","proof":"string","question":"string"},"provocation":{"pattern":"string","tension":"string","implication":"string","openingLine":"string"},"killerQuestions":[{"stage":"Situation","question":"string"},{"stage":"Pain","question":"string"},{"stage":"Impact","question":"string"},{"stage":"Critical Event","question":"string"},{"stage":"Decision","question":"string"}],"potentialObjections":[{"objection":"string","response":"string"},{"objection":"string","response":"string"}],"compellingEventIdeas":["string","string"],"coachingNote":"string"}`;
 
     userPrompt = `Build a complete call prep package for:
 Account: ${account || 'Unknown'}
@@ -106,8 +106,8 @@ Account: ${account || 'Unknown'}`;
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-opus-4-6',
-        max_tokens: 4000,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 3000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
