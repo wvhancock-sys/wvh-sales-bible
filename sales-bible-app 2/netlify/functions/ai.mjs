@@ -107,7 +107,7 @@ Account: ${account || 'Unknown'}`;
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 3000,
+        max_tokens: 2000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
@@ -136,10 +136,15 @@ Account: ${account || 'Unknown'}`;
     try {
       parsed = JSON.parse(clean);
     } catch (parseErr) {
-      console.error('JSON parse error. Raw text:', rawText);
-      return new Response(JSON.stringify({ error: 'Failed to parse AI response', raw: rawText }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
+      console.error('JSON parse failed. Length:', rawText.length, 'Last 200 chars:', rawText.slice(-200));
+      // Return partial data so the app shows something rather than a blank error
+      return new Response(JSON.stringify({
+        error: 'parse_failed',
+        raw: rawText.slice(0, 500),
+        coachingNote: 'AI response was too long to parse fully. Try again or add fewer details.',
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
 
