@@ -7,8 +7,8 @@
   node_bundler = "esbuild"
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  from = "/api/ai"
+  to = "/.netlify/functions/ai"
   status = 200
 
 [[redirects]]
