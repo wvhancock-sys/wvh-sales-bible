@@ -25,6 +25,14 @@ const PRODUCT_FULL = {
   governance: 'watsonx.governance',
 }
 
+// Resolves the active use case -- either a pre-built one from usecases.json,
+// or the AI-generated custom one stored on the session. Every panel reads
+// through this so custom use cases get full parity with pre-built ones.
+function getActiveUseCase(session) {
+  if (session.customUseCase) return session.customUseCase
+  return usecases.useCases.find(u => u.id === session.useCase) || null
+}
+
 // ── Diagnostic ───────────────────────────────────────────────
 function DiagnosticPanel({ onComplete }) {
   const { questions, routes } = usecases.diagnostic
@@ -199,7 +207,7 @@ function PlayPanel({ session }) {
 // ── Discovery Panel ──────────────────────────────────────────
 function DiscoveryPanel({ session, aiResult }) {
   const [activeStage, setActiveStage] = useState('Situation')
-  const uc = usecases.useCases.find(u => u.id === session.useCase)
+  const uc = getActiveUseCase(session)
   const product = bible.products.find(p => p.id === session.product)
 
   const aiGrouped = aiResult?.killerQuestions?.reduce((acc, q) => {
@@ -291,7 +299,7 @@ function ObjItem({ obj, open, toggle }) {
 
 function ObjectionPanel({ session, aiResult }) {
   const [open, setOpen] = useState(null)
-  const uc = usecases.useCases.find(u => u.id === session.useCase)
+  const uc = getActiveUseCase(session)
 
   const aiObjs = aiResult?.potentialObjections?.map((o, i) => ({ ...o, id: `ai-${i}`, isAI: true, stage: 'AI-generated' })) || []
   const ucObjs = uc?.objections?.map((o, i) => ({ ...o, id: `uc-${i}`, stage: `${uc.name} specific` })) || []
@@ -338,7 +346,7 @@ function ObjectionPanel({ session, aiResult }) {
 
 // ── Prep Panel ───────────────────────────────────────────────
 function PrepPanel({ session, aiResult, aiLoading, aiError, onBuild, updateSession }) {
-  const uc = usecases.useCases.find(u => u.id === session.useCase)
+  const uc = getActiveUseCase(session)
   const persona = usecases.personas.find(p => p.id === session.persona)
   return (
     <div>
@@ -449,22 +457,156 @@ function PrepPanel({ session, aiResult, aiLoading, aiError, onBuild, updateSessi
   )
 }
 
+// ── Custom Use Case Builder ──────────────────────────────────
+// For any scenario that doesn't match a pre-built use case. Generates
+// the same depth (questions, objections, CEs, proof) on demand and
+// stores it on the session so every tab picks it up automatically.
+function CustomUseCaseBuilder({ session, updateSession, onBack }) {
+  const [description, setDescription] = useState(session.knowSoFar || '')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [preview, setPreview] = useState(null)
+
+  async function generate() {
+    if (!session.product || !description.trim()) return
+    setError(null); setLoading(true); setPreview(null)
+    try {
+      const res = await fetch('/.netlify/functions/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'generate-usecase',
+          product: session.product,
+          account: session.account,
+          industry: session.industry,
+          situationDescription: description,
+        }),
+      })
+      const text = await res.text()
+      let data
+      try { data = JSON.parse(text) } catch (e) { throw new Error('Parse error: ' + text.slice(0, 150)) }
+      if (data.error) throw new Error(data.error)
+      setPreview(data)
+    } catch (e) {
+      setError(e.message || 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function useThis() {
+    updateSession({ customUseCase: preview, useCase: '', persona: '' })
+    onBack()
+  }
+
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <span className="section-label">Outside the standard playbook?</span>
+        <div className="display-md" style={{ fontSize: '1.2rem', marginBottom: 8 }}>Describe the situation. We'll build the play.</div>
+        <p className="body-sm">For any scenario that doesn't match a pre-built use case. Be as specific as you can -- function, what's broken, what they're trying to do.</p>
+      </div>
+
+      <div className="field-group" style={{ marginBottom: 16 }}>
+        <span className="field-label">What's the situation?</span>
+        <textarea
+          className="field-textarea"
+          rows={5}
+          placeholder="e.g. 'Legal team at an insurance company manually reviews every contract for compliance clauses before it goes to underwriting. Takes 3 days per contract, and they're drowning in volume after an acquisition.'"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+        />
+      </div>
+
+      {error && <div className="error-msg">{error}</div>}
+
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button className="btn-primary" onClick={generate} disabled={loading || !description.trim() || !session.product}>
+          {loading
+            ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Building the play...</>
+            : <><span className="ai-dot" style={{ marginRight: 8 }} /> Generate Use Case</>}
+        </button>
+        <button className="btn-outline" onClick={onBack}>← Back</button>
+      </div>
+
+      {!session.product && <p className="body-sm" style={{ marginTop: 10 }}>Select a product in the sidebar first.</p>}
+
+      {preview && !loading && (
+        <div style={{ marginTop: 32 }}>
+          <hr className="section-rule-md" style={{ marginBottom: 20 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span className="ai-dot" />
+            <span className="section-label" style={{ marginBottom: 0 }}>Generated use case</span>
+          </div>
+
+          <div style={{ border: '2px solid #000', padding: 20, marginBottom: 16 }}>
+            <div className="display-md" style={{ fontSize: '1.2rem', marginBottom: 6 }}>{preview.name}</div>
+            <p className="body-sm" style={{ fontStyle: 'italic', marginBottom: 14 }}>{preview.tagline}</p>
+
+            <div style={{ marginBottom: 12 }}>
+              <span className="section-label">Pattern</span>
+              <p className="body-text">{preview.pattern}</p>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <span className="section-label">Gap</span>
+              <p className="body-text">{preview.gap}</p>
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <span className="section-label">Killer question</span>
+              <p className="body-text" style={{ fontStyle: 'italic' }}>"{preview.killerQuestion}"</p>
+            </div>
+
+            {preview.killerQuestions && (
+              <div style={{ marginBottom: 12 }}>
+                <span className="section-label">Discovery questions generated</span>
+                <p className="body-sm">{Object.values(preview.killerQuestions).flat().length} questions across all SPICED stages</p>
+              </div>
+            )}
+
+            {preview.objections?.length > 0 && (
+              <div style={{ marginBottom: 12 }}>
+                <span className="section-label">Objections handled</span>
+                <p className="body-sm">{preview.objections.length} objection responses generated</p>
+              </div>
+            )}
+          </div>
+
+          {preview.coachingNote && (
+            <div className="note-block" style={{ marginBottom: 16 }}>
+              <span className="section-label">Coaching note on fit</span>
+              <p className="body-sm" style={{ color: 'var(--fg)', marginTop: 4 }}>{preview.coachingNote}</p>
+            </div>
+          )}
+
+          <button className="btn-primary" onClick={useThis}>
+            Use this play in Mission Control →
+          </button>
+          <button className="btn-ghost" style={{ marginLeft: 16 }} onClick={() => setPreview(null)}>
+            Try a different description
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── MAIN COMPONENT ───────────────────────────────────────────
 export default function MissionControl({ session, updateSession, navigate }) {
   const [activeTab, setActiveTab] = useState('prep')
   const [aiResult, setAiResult] = useState(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState(null)
-  const [showDiagnostic, setShowDiagnostic] = useState(false)
+  const [subView, setSubView] = useState(null) // null | 'diagnostic' | 'custom'
 
-  const selectedUC = usecases.useCases.find(u => u.id === session.useCase)
+  const selectedUC = getActiveUseCase(session)
   const selectedPersona = usecases.personas.find(p => p.id === session.persona)
   const productUseCases = usecases.useCases.filter(u => u.productId === session.product)
   const callTypeLabel = CALL_TYPES.find(c => c.id === session.callType)?.label
+  const isCustomUC = !!session.customUseCase
 
   function handleDiagnosticComplete(product, useCase, persona) {
-    updateSession({ product, useCase, persona })
-    setShowDiagnostic(false)
+    updateSession({ product, useCase, persona, customUseCase: null })
+    setSubView(null)
     setAiResult(null)
   }
 
@@ -514,16 +656,37 @@ export default function MissionControl({ session, updateSession, navigate }) {
     { id: 'objections', label: 'Objections' },
   ]
 
-  if (showDiagnostic) {
+  if (subView === 'diagnostic') {
     return (
       <div className="mc-layout">
         <aside className="mc-sidebar">
           <div className="mc-sidebar-section">
-            <button className="btn-ghost" onClick={() => setShowDiagnostic(false)}>← Back to Mission Control</button>
+            <button className="btn-ghost" onClick={() => setSubView(null)}>← Back to Mission Control</button>
           </div>
         </aside>
         <div className="mc-panel" style={{ padding: '32px' }}>
           <DiagnosticPanel onComplete={handleDiagnosticComplete} />
+        </div>
+      </div>
+    )
+  }
+
+  if (subView === 'custom') {
+    return (
+      <div className="mc-layout">
+        <aside className="mc-sidebar">
+          <div className="mc-sidebar-section">
+            <button className="btn-ghost" onClick={() => setSubView(null)}>← Back to Mission Control</button>
+          </div>
+          {session.product && (
+            <div className="mc-sidebar-section">
+              <span className="section-label" style={{ marginBottom: 8 }}>Product</span>
+              <span className="tag tag-inverted">{PRODUCT_FULL[session.product]}</span>
+            </div>
+          )}
+        </aside>
+        <div className="mc-panel" style={{ padding: '32px' }}>
+          <CustomUseCaseBuilder session={session} updateSession={updateSession} onBack={() => setSubView(null)} />
         </div>
       </div>
     )
@@ -538,14 +701,14 @@ export default function MissionControl({ session, updateSession, navigate }) {
         <div className="mc-sidebar-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <span className="section-label" style={{ marginBottom: 0 }}>Product</span>
-            <button className="btn-ghost" style={{ padding: 0, fontSize: 9 }} onClick={() => setShowDiagnostic(true)}>
+            <button className="btn-ghost" style={{ padding: 0, fontSize: 9 }} onClick={() => setSubView('diagnostic')}>
               Not sure? →
             </button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid #000' }}>
             {bible.products.map(p => (
               <button key={p.id}
-                onClick={() => { updateSession({ product: p.id, useCase: '', persona: '' }); setAiResult(null) }}
+                onClick={() => { updateSession({ product: p.id, useCase: '', persona: '', customUseCase: null }); setAiResult(null) }}
                 style={{
                   background: session.product === p.id ? '#000' : '#fff',
                   color: session.product === p.id ? '#fff' : 'var(--muted-fg)',
@@ -564,29 +727,52 @@ export default function MissionControl({ session, updateSession, navigate }) {
         </div>
 
         {/* Use Case -- appears once product is selected */}
-        {session.product && productUseCases.length > 0 && (
+        {session.product && (
           <div className="mc-sidebar-section">
             <span className="section-label" style={{ marginBottom: 10 }}>Use Case</span>
-            <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border-light)' }}>
-              {productUseCases.map(uc => (
-                <button key={uc.id}
-                  onClick={() => { updateSession({ useCase: uc.id }); setAiResult(null) }}
-                  style={{
-                    background: session.useCase === uc.id ? '#000' : '#fff',
-                    color: session.useCase === uc.id ? '#fff' : 'var(--muted-fg)',
-                    border: 'none', borderBottom: '1px solid var(--border-light)',
-                    padding: '10px 14px', cursor: 'pointer', textAlign: 'left', transition: 'all 100ms',
-                    fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase',
-                  }}>
-                  {uc.shortName}
+
+            {isCustomUC ? (
+              <div style={{ border: '2px solid #000', padding: '12px 14px', marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                  <div>
+                    <span className="tag tag-inverted" style={{ marginBottom: 6 }}>Custom</span>
+                    <div style={{ fontFamily: 'var(--display)', fontWeight: 700, fontSize: 13, marginTop: 6 }}>{session.customUseCase.name}</div>
+                  </div>
+                </div>
+                <button className="btn-ghost" style={{ marginTop: 8, padding: 0, fontSize: 9 }} onClick={() => updateSession({ customUseCase: null })}>
+                  Clear and pick standard →
                 </button>
-              ))}
-            </div>
+              </div>
+            ) : (
+              productUseCases.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border-light)', marginBottom: 8 }}>
+                  {productUseCases.map(uc => (
+                    <button key={uc.id}
+                      onClick={() => { updateSession({ useCase: uc.id, customUseCase: null }); setAiResult(null) }}
+                      style={{
+                        background: session.useCase === uc.id ? '#000' : '#fff',
+                        color: session.useCase === uc.id ? '#fff' : 'var(--muted-fg)',
+                        border: 'none', borderBottom: '1px solid var(--border-light)',
+                        padding: '10px 14px', cursor: 'pointer', textAlign: 'left', transition: 'all 100ms',
+                        fontFamily: 'var(--mono)', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase',
+                      }}>
+                      {uc.shortName}
+                    </button>
+                  ))}
+                </div>
+              )
+            )}
+
+            {!isCustomUC && (
+              <button className="btn-outline btn-full" style={{ fontSize: 10 }} onClick={() => setSubView('custom')}>
+                + Build Custom Use Case
+              </button>
+            )}
           </div>
         )}
 
-        {/* Persona -- appears once use case is selected */}
-        {session.useCase && selectedUC && (
+        {/* Persona -- appears once a pre-built use case is selected (custom UCs generate their own framing) */}
+        {session.useCase && selectedUC && !isCustomUC && selectedUC.personas && (
           <div className="mc-sidebar-section">
             <span className="section-label" style={{ marginBottom: 10 }}>Who's in the room?</span>
             <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border-light)' }}>
@@ -672,7 +858,7 @@ export default function MissionControl({ session, updateSession, navigate }) {
           {session.product
             ? <><span className="context-label">Product</span><span className="context-value">{PRODUCT_FULL[session.product]}</span></>
             : <span className="context-label" style={{ color: '#c00' }}>← Select a product</span>}
-          {session.useCase && <><div className="context-sep" /><span className="context-label">Use case</span><span className="context-value">{selectedUC?.shortName}</span></>}
+          {(session.useCase || isCustomUC) && <><div className="context-sep" /><span className="context-label">Use case</span><span className="context-value">{selectedUC?.shortName || selectedUC?.name}</span></>}
           {session.persona && <><div className="context-sep" /><span className="context-label">Persona</span><span className="context-value">{selectedPersona?.title}</span></>}
           {session.callType && <><div className="context-sep" /><span className="context-label">Call</span><span className="context-value">{callTypeLabel}</span></>}
           {session.account && <><div className="context-sep" /><span className="context-label">Account</span><span className="context-value">{session.account}</span></>}

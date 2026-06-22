@@ -68,6 +68,33 @@ Respond ONLY with valid JSON, no markdown:
     userPrompt = `Account: ${account || 'Unknown'}, Industry: ${industry || 'Unknown'}, Product: ${product || 'Unknown'}, ${ucContext}${personaContext}Call type: ${callType || 'discovery'}, Buyer: ${buyerName || ''} ${buyerTitle || ''}, Context: ${knowSoFar || 'None'}`;
   }
 
+  else if (mode === 'generate-usecase') {
+    const productContext = {
+      orchestrate: 'watsonx Orchestrate: AI agents that execute cross-system workflows end to end, not just chatbots that talk about the work. It connects ERPs, HRIS, ITSM, CRM, and any system with an API into one automated flow, eliminating the manual handoffs between systems that consume team capacity. Works for any cross-functional, multi-system workflow in any department.',
+      bob: 'IBM Bob (watsonx Code Assistant): AI that understands and modernizes code most tools cannot touch, including COBOL, RPG, PL/I, legacy Java, and proprietary enterprise frameworks. Reverse-engineers existing logic, documents it accurately, and translates or refactors it with engineer-level accuracy. Works for any legacy modernization, code comprehension, or developer productivity scenario.',
+      governance: 'watsonx.governance: the control plane for scaling AI responsibly. Automates model approval workflows, continuous compliance monitoring, drift detection, and audit trail generation across any number of models in production. Works for any AI risk, compliance, or model lifecycle scenario in any regulated or risk-conscious industry.',
+    };
+
+    systemPrompt = `You are an elite IBM enterprise sales strategist. A seller has described a sales situation that does not match any of IBM's pre-built use cases. Your job is to generate a complete, high-quality use case package for this exact situation, matching the depth and specificity of IBM's best hand-written sales playbooks.
+
+Product context: ${productContext[product] || productContext.orchestrate}
+
+Ground everything in what this product actually does. Do not invent capabilities the product does not have. If the described situation does not fit the product well, say so honestly in the coachingNote field rather than forcing a fit.
+
+Be specific, sharp, and grounded in how this industry and function actually operates. No em dashes. No generic filler.
+
+Respond ONLY with valid JSON, no markdown, no code fences:
+{"name":"string (short use case name, e.g. 'Claims Processing Automation')","tagline":"string (one sharp line)","pattern":"string (2-3 sentences on what's happening in companies like this)","gap":"string (2-3 sentences on why current approaches fall short)","proof":"string (1-2 sentences, a believable peer proof point)","killerQuestion":"string (the single best discovery question for this exact situation)","killerQuestions":{"Situation":["string","string"],"Pain":["string","string"],"Impact":["string","string"],"Critical Event":["string","string"],"Decision":["string"]},"objections":[{"objection":"string","response":"string"},{"objection":"string","response":"string"},{"objection":"string","response":"string"}],"compellingEvents":["string","string","string"],"validation":"string (what a 14-day proof would look like for this use case)","coachingNote":"string (honest note on fit, risk, or what to watch for with this scenario)"}`;
+
+    userPrompt = `Product: ${product || 'Unknown'}
+Industry: ${industry || 'Unknown'}
+Account: ${account || 'Unknown'}
+
+Situation described by the seller: ${body.situationDescription || 'No description provided'}
+
+Generate a complete use case package for this exact situation. Be as specific as the situation described allows. If details are thin, make reasonable industry-grounded assumptions but flag them in the coaching note.`;
+  }
+
   else if (mode === 'prep') {
     systemPrompt = `You are an elite enterprise sales coach for IBM's AI Power & Productivity team. Generate a call prep package using SPICED methodology (Situation, Pain, Impact, Critical Event, Decision).
 
@@ -124,6 +151,8 @@ Account: ${account || 'Unknown'}`;
     });
   }
 
+  const maxTokensForMode = mode === 'generate-usecase' ? 2800 : 2000;
+
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -134,7 +163,7 @@ Account: ${account || 'Unknown'}`;
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
+        max_tokens: maxTokensForMode,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
       }),
