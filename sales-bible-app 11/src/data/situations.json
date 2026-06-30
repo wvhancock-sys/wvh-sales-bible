@@ -1,0 +1,633 @@
+{
+  "situations": [
+    {
+      "id": "cold-call",
+      "num": "01",
+      "name": "Cold Call",
+      "desc": "Outbound dial, no prior relationship",
+      "icon": "📞",
+      "type": "tree",
+      "intro": "You have 10 seconds to earn 30. Every line below is tested. Follow the branch the buyer takes -- don't jump ahead.",
+      "openingBranches": [
+        {
+          "id": "voicemail",
+          "label": "Voicemail",
+          "script": "Hey [Name], this is [Your name] from IBM. I'm calling because companies like [theirs] in [industry] are usually dealing with [one-line pain relevant to their function]. Wanted to see if that's something worth a 20-minute conversation. I'll try you again [day], or you can reach me at [number]. Either way -- no pitch, just want to test whether it's relevant.",
+          "notes": "Keep it under 25 seconds. One pain. One ask. No product names. Call back in 2 business days at a different time.",
+          "followUp": "If no callback after 2 voicemails, switch to email sequence."
+        },
+        {
+          "id": "gatekeeper",
+          "label": "Gatekeeper",
+          "branches": [
+            {
+              "label": "\"What's this regarding?\"",
+              "script": "I'm following up on some work we've been doing with [function] leaders in [industry]. It's specifically about [one-line pain]. Is [Name] the right person to talk to about that, or is there someone else closer to it?",
+              "notes": "Don't say 'I'm in sales.' Don't say 'sales call.' Name the pain. Ask if they're the right person -- this gets you either a transfer or a better name."
+            },
+            {
+              "label": "\"They're not available\"",
+              "script": "No problem -- when's a good time to reach them directly? And is there someone else on the team who might be closer to [pain area] in the meantime?",
+              "notes": "Always leave with either a time or a second name. Never just 'I'll try again.'"
+            },
+            {
+              "label": "\"We don't take cold calls\"",
+              "script": "Completely understand. Could you point me toward the best way to get a message to [Name] about [pain area]? Email, LinkedIn -- whatever works for them.",
+              "notes": "Don't push. Get the channel. Follow up there immediately."
+            }
+          ]
+        },
+        {
+          "id": "wrong-person",
+          "label": "Wrong person",
+          "script": "Appreciate you picking up. I was trying to reach someone who deals with [specific pain area] -- am I in the right ballpark, or is there someone better to talk to?",
+          "notes": "Don't apologize and hang up. Turn wrong person into a referral. Every conversation is a chance to multithread.",
+          "followUp": "Get the name they give you. Email that person within the hour referencing who pointed you."
+        },
+        {
+          "id": "right-person-cold",
+          "label": "Right person — cold open",
+          "script": "Hey [Name] -- [Your name] from IBM. I'll be straight with you, this is a cold call. I've got about 30 seconds of context I want to give you, and then you can tell me if it's worth a longer conversation. Fair?",
+          "notes": "The honesty disarms. Most reps don't say 'cold call' -- you doing it signals confidence and respect.",
+          "nextBranches": ["objection-send-info", "objection-not-looking", "objection-have-solution", "objection-not-my-decision", "engaged", "neutral", "what-does-ibm-do"]
+        },
+        {
+          "id": "right-person-knows-ibm",
+          "label": "Right person — knows IBM",
+          "script": "Great -- then I won't waste time on the IBM overview. I'm specifically calling about [pain area] for [function] teams. We've been working with a few [industry] companies on [specific use case] and I wanted to see if that's something on your radar.",
+          "notes": "Skip the company pitch entirely. Go straight to the pain. They knowing IBM is an advantage -- use it.",
+          "nextBranches": ["objection-have-solution", "objection-not-looking", "engaged", "neutral"]
+        }
+      ],
+      "objectionBranches": [
+        {
+          "id": "objection-send-info",
+          "label": "\"Send me some information\"",
+          "script": "I could -- but most of it won't be relevant to you specifically. Give me 90 seconds to see if what we're doing even applies to your situation. If it doesn't land, I'll send you whatever would actually be useful and leave you alone. Deal?",
+          "notes": "Don't send the deck. A sent deck is a dead deal. The ask to just 90 more seconds is almost always accepted.",
+          "ifTheyStillSayNo": "Okay, totally fair. What's the best email for you -- and can I ask one question before I let you go? [Pain question]. If that's not a problem for you, I'll make the email very short."
+        },
+        {
+          "id": "objection-not-looking",
+          "script": "That's actually the most common response I get from teams that end up working with us -- they weren't looking when we first talked either. Can I ask: [use case pain question]? If that's not relevant at all, I'll cross you off the list.",
+          "label": "\"Not looking / not a priority\"",
+          "notes": "Don't accept the brush-off. Test whether 'not looking' means 'not a priority' or 'already solved.' One question separates them.",
+          "ifItReallyIsntAPriority": "Totally fair. When does that typically come back on the radar for you -- is there a planning cycle where it would be worth reconnecting?"
+        },
+        {
+          "id": "objection-have-solution",
+          "label": "\"We already have something\"",
+          "script": "Good -- can I ask what you're using? [Listen.] Got it. The reason I ask is that most of what we're doing works alongside existing tools rather than replacing them. The specific gap I'm seeing in [industry] is [gap]. Does that show up for you at all, or is that fully covered?",
+          "notes": "Never trash the incumbent. Ask what they have, then specifically name the gap the incumbent doesn't cover. If they say it's fully covered, believe them and exit gracefully."
+        },
+        {
+          "id": "objection-not-my-decision",
+          "label": "\"Not my decision\"",
+          "script": "Appreciate that -- who would it involve? I'm not looking to go around you, I just want to make sure I'm talking to the right people so I'm not wasting your team's time.",
+          "notes": "Multi-thread immediately. Get the name. Then: 'Would it be weird if I reached out to them directly and mentioned you'd suggested it?'"
+        },
+        {
+          "id": "what-does-ibm-do",
+          "label": "\"What does IBM actually do?\"",
+          "script": "Short version: IBM makes AI that does the actual work -- not chatbots that talk about work. For [their function], that usually means [one-line use case]. Does that sound even remotely relevant to something you're dealing with?",
+          "notes": "Never say 'we have a broad portfolio.' One line. One pain. One question. Their answer tells you where to go next."
+        }
+      ],
+      "engagementBranches": [
+        {
+          "id": "engaged",
+          "label": "They're engaged / curious",
+          "script": "Good. Here's the 30-second version: [PATTERN -- what companies like theirs are experiencing]. [TENSION -- what breaks down when they try to solve it]. [IMPLICATION -- cost of staying the same]. That's the pattern we're seeing. Does any of that resonate with what you're dealing with, or is it completely off base?",
+          "notes": "This is the provocation. Deliver it in one breath. Then stop. The silence after the implication is where they start talking.",
+          "nextStep": "If they engage: go into discovery -- pain, impact, timeline. If they deflect: left-swing -- 'Is this not actually a problem for you, or is it one that's just been deprioritized?'"
+        },
+        {
+          "id": "neutral",
+          "label": "Neutral / non-committal",
+          "script": "Fair enough. One question before I let you go: [killer discovery question for their function]. If that's genuinely not a problem, I'll get off your calendar. If it is -- even a small one -- it might be worth 20 minutes.",
+          "notes": "The killer question is the test. A neutral buyer who has the problem will usually admit it when asked directly. Make it specific enough that a generic 'no' feels dishonest."
+        }
+      ],
+      "closeBranches": [
+        {
+          "id": "close-book",
+          "label": "Book the discovery call",
+          "script": "Let's do this properly then. I don't want to try to cover everything in a cold call. Could we get 20 minutes on the calendar? I'll come with two or three specific questions based on what you just told me -- no deck, no pitch. What does [day] or [day] look like?",
+          "notes": "Offer two specific days. Not 'when are you free.' Specific days force a yes or a redirect, not an indefinite delay."
+        },
+        {
+          "id": "close-send-onepager",
+          "script": "Here's what I'll do: I'll send you a single page -- not a deck -- that maps the specific pattern I described to what I think is happening at [company]. If it's not relevant, ignore it. If it is, you'll know in 60 seconds. Fair?",
+          "label": "Send one-pager + follow-up",
+          "notes": "Set the expectation: one page, not a deck. Follow up in 2 days with a specific question based on their role, not 'did you get a chance to look at it.'"
+        },
+        {
+          "id": "close-graceful-exit",
+          "label": "Graceful exit",
+          "script": "Totally fair. I won't keep calling you. One last thing -- is there someone else at [company] who might be closer to [pain area], or is this just not something on anyone's radar right now?",
+          "notes": "Even a dead call is a multi-thread opportunity. Leave with a name or a clear signal to deprioritize."
+        }
+      ]
+    },
+
+    {
+      "id": "inbound-discovery",
+      "num": "02",
+      "name": "Inbound Discovery",
+      "desc": "They came to you — qualify deep",
+      "icon": "📥",
+      "type": "play",
+      "goal": "Quantified pain. CE with a date. EB identified. Decision process sketched. Validation proposed.",
+      "steps": [
+        {
+          "id": "s1",
+          "name": "Up-front contract",
+          "time": "First 2 min",
+          "script": "Appreciate the time. Here's what I'd like to do today: understand your priorities, ask a few pointed questions, share a quick point of view, and recommend a specific next step. If we both see a fit, we'll align on a validation plan. If not, we shake hands. Still good on time?\n\nThen: Okay if I recap what I'm hearing as we go?\n\nAnd: My goal today is to figure out if there's enough here to justify a validation -- and to be honest with you if there isn't.",
+          "why": "Three signals: this seller has a plan, a point of view, and is willing to walk away. All three lower defenses."
+        },
+        {
+          "id": "s2",
+          "name": "Hypothesis test",
+          "time": "Min 2-5",
+          "script": "Before I get into questions -- I want to share why I think this conversation makes sense, and you can tell me if I'm wrong.\n\nCompanies like yours in [industry] are usually finding that [pattern]. When they try to [goal], they hit [gap], which costs them [impact]. Is that anywhere close to what's going on here, or is the real issue something different?",
+          "why": "Leads with POV instead of 'tell me about yourself.' Invites disagreement, which surfaces real pain faster."
+        },
+        {
+          "id": "s3",
+          "name": "SPICED discovery",
+          "time": "Min 5-22",
+          "script": "S — SITUATION: Walk me through how [process] works today. Who's involved, in what order?\n\nP — PAIN: When that hits [known friction], what actually breaks? How often?\n\nI — IMPACT: If this keeps going unchanged for 12 more months, what does that cost you -- in dollars, hours, or risk events?\n\n[DO THE MATH LIVE]: So if that's [X hours] per person times [Y people] times [Z weeks], you're looking at roughly [number]. Does that feel right?\n\nCE — CRITICAL EVENT: What's making this a priority right now versus six months ago? Is there a specific date this needs to be solved before?\n\nD — DECISION: Walk me through how something like this gets bought. Who else needs to be involved? Who signs?",
+          "why": "The math moment is the most important 60 seconds. Buyers who calculate with you are 3x more likely to advance.",
+          "leftSwing": {
+            "Impact": "I want to make sure I'm not overstating this -- is the cost of not solving it significant enough to justify a project, or more of an annoyance?",
+            "Critical Event": "A lot of teams say this is important but it doesn't get prioritized. What makes this time different?",
+            "Decision": "If we agreed today this was worth doing, is there actually a path to getting it approved, or are there blockers I should know about?"
+          }
+        },
+        {
+          "id": "s4",
+          "name": "Problem lock + path",
+          "time": "Last 5-8 min",
+          "script": "Let me make sure I have this right. You're dealing with [pain], it's costing you [impact], and [CE] is creating pressure to solve it before [date]. Accurate?\n\nBased on that, I think the right next step is a 14-day validation where we [specific scope]. The goal is [metric]. We'd need [inputs] from you. At the end of two weeks you'd have enough evidence to decide yes or no.\n\nDoes that feel like the right scope? And can we get [EB name] on a 30-minute call this week to align on whether this is worth doing?"
+        },
+        {
+          "id": "s5",
+          "name": "Same-day recap",
+          "time": "Within 4 hours",
+          "script": "Subject: Recap and proposed next step -- [Company]\n\n[Name], thanks for the time today. Here's what I heard:\n- [Pain 1 in their words]\n- [Pain 2 in their words]\n- [Quantified impact they gave me]\n- CE: [event with date]\n\nProposed next step: [validation scope, 1 sentence]. I'd like to bring [SE] into a 30-min call with [EB] to align on whether this is worth starting.\n\nDoes [date/time] work?"
+        }
+      ]
+    },
+
+    {
+      "id": "outbound-discovery",
+      "num": "03",
+      "name": "Outbound Discovery",
+      "desc": "You created the meeting — earn the right",
+      "icon": "📤",
+      "type": "play",
+      "goal": "Earn the right to ask questions. Land a confirmed pain. Get the next conversation.",
+      "steps": [
+        {
+          "id": "s1",
+          "name": "Up-front contract",
+          "time": "First 2 min",
+          "script": "Thanks for making the time. I know you didn't ask for this call, so I'll be direct: I have a specific hypothesis about [company] that I want to test with you. If I'm wrong, I'll tell you and we'll wrap up early. If I'm right, I'd like 20 minutes to go deeper.\n\nFair?"
+        },
+        {
+          "id": "s2",
+          "name": "The provocation",
+          "time": "Min 2-7",
+          "script": "[PATTERN]: Here's what I'm seeing with companies like yours: [industry observation -- specific, not generic].\n\n[TENSION]: When they try to [address it], they hit [specific friction that crosses systems or functions].\n\n[IMPLICATION]: Which means [cost -- dollars, risk, or strategic block] every [month/quarter] they stay on the current path.\n\nI noticed [specific trigger from their company -- job posting, earnings, news] and it made me think you might be hitting this earlier than most.\n\nIs that anywhere close to what's actually going on?",
+          "why": "The provocation earns the right to ask questions. It shows you did work, have a POV, and aren't fishing for information you should already have."
+        },
+        {
+          "id": "s3",
+          "name": "Inverted SPICED",
+          "time": "Min 7-22",
+          "script": "I — IMPACT FIRST: What's the cost of the current state -- in time, dollars, or risk? Don't assume. Verify.\n\nP — PAIN: What specifically breaks down? Where does it stall? How often?\n\nS — SITUATION: Help me understand the current setup -- who's involved, what tools, what volume?\n\nCE — CONSTRUCT IT: You mentioned [date/event]. Is there a connection between that and solving this? What does it mean if this isn't fixed before then?\n\nD — DECISION: If we got to the point where you wanted to move on this, how does that work in your org?",
+          "why": "On outbound, lead with Impact. The buyer didn't call you -- don't ask permission-seeking Situation questions first.",
+          "leftSwing": {
+            "Impact": "I want to gut-check myself -- is this actually painful enough to be worth doing something about, or is it just a fact of life at this point?",
+            "Critical Event": "A lot of companies I talk to have been sitting on this for a while. What's different right now?",
+            "Decision": "Is there a realistic path to getting something like this approved in the next 90 days, or are we talking longer horizon?"
+          }
+        },
+        {
+          "id": "s4",
+          "name": "Two-step ladder close",
+          "time": "Last 5-8 min",
+          "script": "Step 1 -- POV follow-up: I'd like to send you a one-pager that maps what I've seen at [comparable company] to what you just described. It's one page, not a deck. Would that be useful?\n\nStep 2 -- Validation ask (only if CE is real): If that lands, I'd want to bring my SE in for a 45-minute working session to show you what [use case] would look like in your environment. Does that feel like a reasonable next step if the one-pager is relevant?\n\nBook it live: Does [specific date] work for the follow-up call?"
+        }
+      ]
+    },
+
+    {
+      "id": "demo",
+      "num": "04",
+      "name": "Demo / Deep Dive",
+      "desc": "Buyer-led — produce solution agreement",
+      "icon": "🖥️",
+      "type": "play",
+      "goal": "Explicit solution agreement. Not 'great demo' -- 'IBM can solve this and here's what we need next.'",
+      "prereq": "SE Brief sent 48 hours before. If you can't fill in Pains Confirmed, reschedule.",
+      "steps": [
+        {
+          "id": "s1",
+          "name": "Reconfirm the problem",
+          "time": "First 5 min",
+          "script": "Before we show anything -- here's what we understood from the last conversation.\n\n[State top 2-3 confirmed pains in their words, not IBM product language.]\n\nDoes that still reflect what matters most today, or has anything shifted?"
+        },
+        {
+          "id": "s2",
+          "name": "Set the demo contract",
+          "time": "Min 5-8",
+          "script": "We'll spend the first section on [pain 1 workflow], the second on [pain 2 workflow], and the third on [governance/admin/how your team manages it]. At each point we'll pause to check whether what you're seeing maps to your environment.\n\nDoes that order work?"
+        },
+        {
+          "id": "s3",
+          "name": "Show the before state",
+          "time": "1-2 min",
+          "script": "Quick picture of the current state we're solving: [30-second description of the friction, using their words]. That's what we're replacing.",
+          "why": "The before state makes the IBM workflow land harder. Don't skip it."
+        },
+        {
+          "id": "s4",
+          "name": "Demonstrate — min relevant workflow",
+          "time": "Core demo",
+          "script": "For every capability you show:\n\nBEFORE: 'This addresses [confirmed pain] for [who in the room].'\n\nSHOW the capability.\n\nAFTER: 'How does this compare with what you're doing today?' OR 'Where would this create the most value for your team?' OR 'What would prevent this from working in your environment?'",
+          "why": "Three capabilities maximum. Each must be tied to a confirmed pain. Never run a feature tour."
+        },
+        {
+          "id": "s5",
+          "name": "Surface buying criteria",
+          "time": "During demo",
+          "script": "When your team evaluates what you've seen against alternatives -- what will matter most? And what would make you confident enough to recommend moving to the next step?",
+          "why": "Ask this during the demo, not at the close. The answer changes what you show next."
+        },
+        {
+          "id": "s6",
+          "name": "Confirm solution agreement",
+          "time": "Min 45-50",
+          "script": "Based on what you've seen today -- where does IBM appear strong for your situation? And where do you still have concerns or questions that would need to be resolved before you'd feel confident recommending this internally?",
+          "why": "This is the moment. If they can't answer 'strong for' -- the demo didn't land. If they name concerns -- those become the next steps."
+        },
+        {
+          "id": "s7",
+          "name": "Advance to specific next step",
+          "time": "Last 5 min",
+          "script": "Match the next step to the gap:\n\nTechnical concern → Architecture session with SE + their team\nCredibility gap → Reference call with peer in their industry\nExec gap → 30-min business case review with EB\nRisk/proof gap → Scoped 14-day validation, written exit criteria\nCommercial gap → Pricing + scope with relevant stakeholders\n\nNever: 'Let's set up another call to discuss.'"
+        }
+      ]
+    },
+
+    {
+      "id": "exec-alignment",
+      "num": "05",
+      "name": "Executive Alignment",
+      "desc": "Meeting the economic buyer",
+      "icon": "🎯",
+      "type": "play",
+      "goal": "EB confirms business case, sponsors path forward, connects IBM to procurement.",
+      "prereq": "EB One-Pager built. Champion has been briefed on agenda. Investment range shared with EB before the meeting.",
+      "steps": [
+        {
+          "id": "s1",
+          "name": "Build the EB one-pager first",
+          "time": "48 hours before",
+          "script": "One page. Their logo top-left. IBM small. Their language. Their numbers.\n\nHeadline: the business outcome in their words (not product names)\nCurrent State: 3 bullets with their numbers\nWhat Changes: 3 outcome bullets (not features)\nThe Path: Validate (14 days) / Deploy (60 days) / Scale (90+ days) with dates\nInvestment Range: order-of-magnitude only\nWhy Now: their CE in their words\nWhat We Need: the ONE decision you're asking for today",
+          "why": "EBs don't read decks. If it doesn't fit on one page, you don't understand the deal yet."
+        },
+        {
+          "id": "s2",
+          "name": "The 30-minute agenda",
+          "time": "In the meeting",
+          "script": "Min 1-3: Set agenda. 'I want to cover three things: what we learned, what a path looks like, and whether this is the right priority right now. Does that work?'\n\nMin 3-10: CHAMPION presents the problem. (Not you. Let them own the internal framing.)\n\nMin 10-20: IBM presents results + path. Use the one-pager.\n\nMin 20-28: EB questions and objections. Let them run.\n\nMin 28: The ask. 'Based on what you've seen -- is this something you want to move forward on? If yes, what's the right next step from your side?'",
+          "why": "Champion presenting the problem is the most important structural move. It signals internal ownership."
+        },
+        {
+          "id": "s3",
+          "name": "Handle EB responses",
+          "time": "Min 20-28",
+          "branches": [
+            {
+              "label": "EB says yes",
+              "script": "Perfect. To make sure we don't lose momentum -- can we agree on [next milestone] by [date]? And who should IBM connect with on your procurement and legal side to get started in parallel?"
+            },
+            {
+              "label": "EB says 'not yet'",
+              "script": "That's fair. Help me understand -- is the timing wrong, or is there something in what we presented that didn't land? I want to make sure if we come back, we're coming back with the right thing."
+            },
+            {
+              "label": "EB wants more data",
+              "script": "Absolutely. What specifically would give you the confidence to move? [Listen.] Could we run a [14-day validation / reference call / deeper architecture session] to get you that evidence in [timeframe]?"
+            },
+            {
+              "label": "EB has a blocker you didn't know about",
+              "script": "I appreciate you telling us. [Acknowledge the blocker.] Is that something that could be resolved in parallel while we move forward, or does it need to be cleared first? And who owns that on your side?"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "validation",
+      "num": "06",
+      "name": "Validation / POC",
+      "desc": "14-day proof → commercial decision",
+      "icon": "🧪",
+      "type": "play",
+      "goal": "Measurable result in 14 days. Result converts to a commercial decision.",
+      "steps": [
+        {
+          "id": "s1",
+          "name": "Kickoff (Day 1)",
+          "time": "60-90 min",
+          "script": "Agenda:\n1. Confirm exit criteria in writing -- what does success look like? One number.\n2. Confirm inputs needed from them: data, system access, SME time, sandbox environment\n3. Confirm Day 14 readout is on the calendar WITH the EB in the room\n4. Confirm security review is started in parallel today\n\nExit criteria conversation:\n'I want to make sure we're aligned before we start. If at the end of 14 days we've achieved [specific metric], would that be enough evidence for you to recommend moving to a paid deployment? What would you need to see that we haven't said yet?'",
+          "why": "Exit criteria signed off before work starts is non-negotiable. Without it, the readout becomes a demo, not a decision."
+        },
+        {
+          "id": "s2",
+          "name": "Day 14 readout",
+          "time": "45-60 min with EB",
+          "script": "Results first: 'We set out to [exit criteria]. Here's what we achieved: [result against metric].'\n\nBusiness translation: 'That translates to [dollars/hours/risk events] at your scale.'\n\nRecommendation: 'Based on these results, I'd recommend [Phase 1 scope, timeframe, investment range].'\n\nThe ask: '[EB name], are you prepared to move this to a commercial conversation? If yes -- what does that path look like from your side? If not -- what would we need to show you?'",
+          "why": "EB in the room on Day 14 is the whole game. If the EB isn't there, push the readout until they can be."
+        }
+      ]
+    },
+
+    {
+      "id": "urgency",
+      "num": "07",
+      "name": "Creating Urgency",
+      "desc": "Deal drifting — find or build the CE",
+      "icon": "⏱️",
+      "type": "play",
+      "goal": "Surface or construct a compelling event. Preference is not urgency. Leave with a consequence or close the file.",
+      "steps": [
+        {
+          "id": "s1",
+          "name": "Re-anchor to the problem",
+          "time": "Opening",
+          "script": "Before we talk about timing -- I want to make sure I have the business situation right. You mentioned [specific pain with their number]. Has anything changed on that, or is that still an accurate picture?",
+          "why": "Don't open with timeline questions. Re-establish the cost of the problem first. Urgency lives in consequence, not calendar."
+        },
+        {
+          "id": "s2",
+          "name": "Find the external anchor",
+          "time": "Core conversation",
+          "script": "Work through these in order -- stop at the first real anchor:\n\nLevel 1 (strongest): 'Is there a specific event -- a product launch, license renewal, board commitment, regulatory deadline -- this needs to be in place before?'\n\nLevel 2: 'Is there an internal milestone -- budget cycle, board meeting, enrollment period, system retirement -- that creates a natural deadline?'\n\nLevel 3: 'Let's do the math together. If we estimate [cost per month], what does a 3-month delay in starting actually cost the business?'\n\nLevel 4 (weakest -- not a CE): 'We'd like to have this done in Q3.' This is a preference. Do not accept it as urgency.",
+          "why": "Preference is not urgency. Only consequence creates urgency."
+        },
+        {
+          "id": "s3",
+          "name": "Test whether it's real",
+          "time": "Pressure test",
+          "script": "You've mentioned [date/event]. Help me understand -- what actually happens if that slips? Not in terms of preference, but in terms of a real business impact on [initiative/budget/commitment/team]?",
+          "branches": [
+            {
+              "label": "They give a specific consequence",
+              "script": "Good -- so we're talking [consequence]. Working backward from [date], and accounting for [implementation time + vendor approval], the latest a decision can happen is [date]. Does that math feel right to you?"
+            },
+            {
+              "label": "They can't articulate a consequence",
+              "script": "I hear you -- but I want to be honest with you. Based on what I'm seeing, I'm not hearing a specific consequence that makes [date] a hard deadline. That usually means either the priority has shifted, or we haven't found the real urgency yet. Which do you think it is?"
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "name": "The five-minute drill close",
+          "time": "Every call close",
+          "script": "Before we hang up -- three quick questions:\n\n1. Based on what we covered, does this appear important enough to keep working on together?\n\n2. When would this capability need to be operational for it to actually matter to the initiative you described?\n\n3. Could we map the decisions and approvals required to reach that date -- so we both know what has to happen and who owns each step?"
+        }
+      ]
+    },
+
+    {
+      "id": "stalled",
+      "num": "08",
+      "name": "Stalled Deal Recovery",
+      "desc": "Gone quiet — diagnose and act",
+      "icon": "🔄",
+      "type": "play",
+      "goal": "Diagnose: dead, delayed, or deprioritized. Take the right action for each.",
+      "steps": [
+        {
+          "id": "s1",
+          "name": "Play 5A — Re-anchor nudge",
+          "time": "First move after 7 days of silence",
+          "script": "Subject: Worth re-anchoring?\n\n[Name], last we talked, [date], you said [specific quote about the pain or CE].\n\nHas anything changed on that since? If the timeline shifted, no problem -- I just don't want to keep nudging you on something that isn't a priority anymore.\n\nIf it's still live, I'd like to bring [SE/exec/reference] to the next conversation. Worth getting on the calendar?"
+        },
+        {
+          "id": "s2",
+          "name": "Play 5B — Diagnostic breakup",
+          "time": "Primary breakup — after 5A gets no response",
+          "script": "Subject: Closing the loop on the [initiative] at [Company]\n\nHi [Name],\n\nHope you're doing well. It's been a few weeks since our last correspondence, so I wanted to check in on the status of the [X initiative] within [Company]. In my experience, a lapse in communication spanning this duration usually means one of the following:\n\n1. Priorities have shifted and this is no longer planned for [year].\n2. Pricing didn't meet expectations. If so, we're happy to work with you on that.\n3. You've decided to move forward with another vendor.\n\nAre any of these accurate? If so, it would be helpful receiving your confirmation to ensure we no longer occupy an unfair amount of your time. Looking forward to hearing from you!",
+          "why": "Three specific reasons force a reply. Each answer tells you the next play: (1) nurture, (2) rescope/re-anchor, (3) ask what you missed."
+        },
+        {
+          "id": "s3",
+          "name": "Play 5C — Multi-thread / escalation",
+          "time": "When champion has gone fully silent",
+          "script": "First: Check LinkedIn. Still at the company? Same role?\n\nThen email a second contact: 'Wanted to check in on the [project name] work. [Champion] has been quiet -- has the priority shifted, or is there someone else closer to it now?'\n\nIf still nothing after 7 days:\n\nSubject: Aligning on next steps for [outcome]\n\n[EB name], I wanted to write directly. We started a conversation with [champion] about [outcome] in [month]. We had alignment on [pain] and a path that looked like [validate → deploy → scale].\n\nWe've gone quiet for [time]. Before we close the file, I wanted to make sure that's the right call -- or whether there's a way we can be more useful.\n\ncc-ing [your manager] in case it's useful to bring an exec into the conversation."
+        }
+      ]
+    },
+
+    {
+      "id": "negotiation",
+      "num": "09",
+      "name": "Negotiation",
+      "desc": "Paper in motion — trade, don't yield",
+      "icon": "⚖️",
+      "type": "reference",
+      "principles": [
+        {
+          "title": "Trade, don't yield",
+          "body": "Every concession is exchanged for a commitment. Never give something for nothing. 'I can look at the pricing if you can confirm scope and give me a signature date.' Not: 'Let me see what I can do.'"
+        },
+        {
+          "title": "Never the first to move on price",
+          "body": "When pressed on price, ask what they're comparing it to. 'Help me understand -- is the concern the total number, the timing of when it hits, or the ROI you'd need to see to justify it?' The real objection is almost never the headline number."
+        },
+        {
+          "title": "Anchor to value, not cost",
+          "body": "Every price conversation starts with: 'You told me this is costing you [X] per [month/quarter]. The investment is [Y]. At that value ratio, the question isn't whether this makes sense -- it's whether the timing works.' Then stop talking."
+        },
+        {
+          "title": "Run approval paths in parallel",
+          "body": "Legal, security, procurement, and architecture reviews run simultaneously. Every day of serial processing is a day added to close for no reason. Start the vendor approval checklist the moment Stage 3 is achieved."
+        },
+        {
+          "title": "The redline deadline",
+          "body": "Pre-schedule the legal-to-legal call. Break contract review into milestones with specific dates. 'Customer legal returns redlines to IBM by [date]' is a milestone. 'Legal is reviewing' is a black box."
+        }
+      ],
+      "scripts": [
+        {
+          "situation": "They ask for a discount",
+          "script": "I hear you. Before I take anything back to look at -- help me understand what's driving that. Is it the total number, the timing, or the ROI threshold you need to hit for the business case? [Listen.] Got it. Here's what I can do: if you can confirm [scope/term/date], I can have a conversation about [specific concession]. But I need [specific commitment] in return."
+        },
+        {
+          "situation": "Procurement tries to commoditize",
+          "script": "I want to make sure we're comparing the right things. The alternatives you're considering -- do they handle [specific technical differentiator, e.g., COBOL, cross-system orchestration, continuous model monitoring]? If yes, we should price compare. If no, we're solving different problems and price comparison isn't the right frame."
+        },
+        {
+          "situation": "They want extended payment terms",
+          "script": "I can look at what's possible on payment structure. In return, I'd need [specific commitment -- signature date, confirmed scope, reference agreement]. What's the specific constraint on the payment side -- is it cash flow, budget cycle timing, or approval limits?"
+        },
+        {
+          "situation": "Legal markup comes back heavy",
+          "script": "Let's get our legal teams on a 30-minute call this week rather than going back and forth in email. [Specific date]. The three things that matter most to us are [1], [2], [3]. If we can align on those, the rest is usually fast. Can your legal lead make [date/time]?"
+        }
+      ]
+    },
+
+    {
+      "id": "power",
+      "num": "10",
+      "name": "Getting to Power",
+      "desc": "Multithread and reach the EB",
+      "icon": "🏛️",
+      "type": "reference",
+      "principles": [
+        {
+          "title": "Foreshadow before you formally ask",
+          "body": "Plant the seed in discovery: 'Given that this touches [functions], initiatives like this usually need executive alignment before the team invests deeply. We don't need that today -- but I'd expect us to involve your [CHRO/CIO] once we confirm the right use case.' Then make the formal ask after you've made an investment."
+        },
+        {
+          "title": "Frame it in the champion's interest",
+          "body": "Never: 'IBM wants to meet your CIO.' Always: 'This conversation protects your internal recommendation and gives you the air cover you need to move forward. Can we get 30 minutes on [EB]'s calendar?'"
+        },
+        {
+          "title": "Use give-to-get",
+          "body": "Every significant IBM investment is an opportunity to request a commitment. Customized workshop → business and technical decision-makers in the room. POC → written exit criteria from the EB before we start. IBM exec involvement → customer exec at equivalent level."
+        }
+      ],
+      "scripts": [
+        {
+          "situation": "Formal ask for EB access",
+          "script": "We now have enough clarity to make the executive conversation useful. Rather than giving [EB] a product presentation, we could bring her the problem as you've described it, the outcome you're targeting, the investment range, and the two decisions you need from her. That protects your internal work and gets you the air cover you need. Can we get 30 minutes on her calendar in the next two weeks?"
+        },
+        {
+          "situation": "Champion can't or won't facilitate",
+          "script": "I want to be transparent with you -- I'm concerned that without executive alignment, we'll get to a commercial conversation and hit a surprise. I don't want that to happen to either of us. Is there a way we can bring [EB] in, even just for 20 minutes, before we go further? I can bring the business case -- you can introduce the initiative."
+        },
+        {
+          "situation": "Building a parallel thread",
+          "script": "[Name], I've been working with [champion] on [initiative] for the past few weeks. I know you work closely on [related area] and wanted to introduce myself directly. I'd value 20 minutes to share what we've learned and get your perspective -- it would sharpen our approach considerably."
+        },
+        {
+          "situation": "The champion test — checking if they're real",
+          "script": "Ask yourself: has this person (1) introduced IBM to stakeholders we hadn't met, (2) sold internally when IBM wasn't in the room, (3) shared internal politics or budget status we wouldn't otherwise know, (4) taken a visible action that cost them something? If not -- they're a contact, not a champion."
+        }
+      ]
+    },
+
+    {
+      "id": "objection-handler",
+      "num": "11",
+      "name": "Objection Incoming",
+      "desc": "Acknowledge → isolate → answer",
+      "icon": "🛡️",
+      "type": "objections",
+      "pattern": "The pattern: Acknowledge (never skip). Ask what's driving it. Isolate ('if we could solve that, is there anything else?'). Answer only the real version.",
+      "categories": [
+        {
+          "id": "early-stage",
+          "name": "Early stage / outbound",
+          "objections": [
+            {
+              "objection": "Just send me some materials",
+              "response": "I could send a deck, but most of it won't apply to you. Twenty minutes of questions and I can send you the one page that actually matches what you're trying to do. Worth it?",
+              "pattern": "Redirect"
+            },
+            {
+              "objection": "We're not looking right now",
+              "response": "Totally fair. Most of the companies I work with weren't looking when we first talked. They were looking nine months later when [trigger]. Want me to check back when [specific trigger] is closer, or is there a better time for a quick conversation?",
+              "pattern": "Plant a seed"
+            },
+            {
+              "objection": "You're not talking to the right person",
+              "response": "Good -- then you can save me a wrong turn. Who in the [function] organization is thinking about [outcome] right now? I'd still love to keep you in the loop because [reason their function cares].",
+              "pattern": "Multi-thread"
+            },
+            {
+              "objection": "We're going to build it ourselves",
+              "response": "Makes sense, a lot of [industry] teams start there. The pattern I see is the first 30% is easy and the last 70% eats the roadmap. Out of curiosity, what's your team's plan for [specific hard part]?",
+              "pattern": "Wedge"
+            }
+          ]
+        },
+        {
+          "id": "commercial",
+          "name": "Commercial stage",
+          "objections": [
+            {
+              "objection": "Budget is tight / too expensive",
+              "response": "Fair. Help me understand: is the concern the total number, the timing of when it hits, or the ROI you'd need to see to justify it? [Answer based on real version: total = re-scope phase 1; timing = ramped pricing; ROI = re-anchor on discovery math.]",
+              "pattern": "Isolate the real version"
+            },
+            {
+              "objection": "We have security concerns",
+              "response": "Which is exactly why you should be looking at IBM rather than the alternatives. Which specific concern is loudest -- data residency, model access, or something else? I'll get our architect on a call with your security team this week.",
+              "pattern": "Reframe + convert to proof"
+            },
+            {
+              "objection": "We're also looking at [competitor]",
+              "response": "Good, you should be evaluating options. What's the criteria you're using to decide? I want to make sure we're being evaluated on the things that actually matter to [outcome], not just a feature checklist.",
+              "pattern": "Anchor to criteria"
+            },
+            {
+              "objection": "We need more time",
+              "response": "Help me understand what you're trying to learn in that time. If it's [X], we can do that in two weeks with a validation. If it's [Y], we can do that in a meeting next Tuesday. What's actually open?",
+              "pattern": "Decompose"
+            }
+          ]
+        },
+        {
+          "id": "product-specific",
+          "name": "Product-specific",
+          "objections": [
+            {
+              "objection": "We already have Copilot / GitHub",
+              "response": "Copilot is excellent for greenfield development in mainstream languages. It doesn't support COBOL, RPG, or PL/I -- the languages your legacy estate actually runs on. And it has no enterprise governance or compliance controls. IBM Bob works where Copilot stops.",
+              "pattern": "Wedge on coverage gap",
+              "product": "bob"
+            },
+            {
+              "objection": "We already have RPA",
+              "response": "RPA is excellent for single-system, rules-based tasks. The work I'm describing spans multiple systems -- SAP, ServiceNow, email -- in one flow. When a process crosses a system boundary, RPA hands off to a human. Orchestrate completes the work. The question is whether the work stays in one system or crosses three.",
+              "pattern": "Wedge on system boundary",
+              "product": "orchestrate"
+            },
+            {
+              "objection": "We'll build governance ourselves",
+              "response": "You can -- but you'll be building it again in 18 months when the regulation changes. Internal governance tooling becomes a maintenance liability the moment the regulatory requirements update. We update the policy library continuously. That's a different economics calculation than owning it yourself.",
+              "pattern": "Total cost of ownership",
+              "product": "governance"
+            },
+            {
+              "objection": "We tried modernization before and it failed",
+              "response": "What failed was the lift-and-shift approach -- rewriting from scratch without understanding what the code actually does. IBM Bob doesn't start with a rewrite. It reverse-engineers the existing logic, documents it accurately, then translates. The output is validated against the original. The failure mode of past projects was guessing. Bob eliminates the guessing.",
+              "pattern": "Reframe the failure",
+              "product": "bob"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "email",
+      "num": "12",
+      "name": "Write an Email",
+      "desc": "All 7 types — AI-generated",
+      "icon": "✉️",
+      "type": "email"
+    }
+  ]
+}
